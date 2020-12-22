@@ -7,6 +7,7 @@ import (
 )
 
 type enet_peer struct {
+	peerid            uint16
 	clientid          uint32 // local peer id
 	mtu               uint32 // remote mtu
 	snd_bandwidth     uint32
@@ -49,6 +50,7 @@ func new_enet_peer(addr *net.UDPAddr, host *enet_host) *enet_peer {
 	cid := host.next_clientid
 	host.next_clientid++
 	return &enet_peer{
+		peerid:            0xffff,
 		clientid:          cid,
 		flags:             0,
 		mtu:               enet_default_mtu,
@@ -73,7 +75,7 @@ func new_enet_peer(addr *net.UDPAddr, host *enet_host) *enet_peer {
 }
 func (peer *enet_peer) do_send(hdr EnetPacketHeader, frag EnetPacketFragment, dat []byte) {
 	writer := bytes.NewBuffer(nil)
-	phdr := EnetProtocolHeader{0, 0, 1, uint32(peer.host.now), peer.clientid}
+	phdr := EnetProtocolHeader{peer.peerid, 0, 1, uint32(peer.host.now), peer.clientid}
 	binary.Write(writer, binary.BigEndian, phdr)
 	binary.Write(writer, binary.BigEndian, &hdr)
 	if hdr.Type == enet_packet_type_fragment {
@@ -186,6 +188,7 @@ func (peer *enet_peer) when_enet_incoming_synack(header EnetPacketHeader, payloa
 	reader := bytes.NewReader(payload)
 	var syn EnetPacketSyn
 	err := binary.Read(reader, binary.BigEndian, &syn)
+	peer.peerid = syn.PeerID
 
 	if err != nil || peer.flags&enet_peer_flags_syn_sending == 0 {
 		debugf("peer reset %X", peer.flags)
