@@ -290,6 +290,7 @@ func (host *enet_host) when_incoming_host_command(item *enet_host_incoming_comma
 	}
 	ch := peer.channel_from_id(item.packet_header.ChannelID)
 
+	_when_enet_packet_incoming_disp[item.packet_header.Type](peer, item.packet_header, item.payload)
 	// ack if needed
 	if item.packet_header.Flags&enet_packet_header_flags_needack != 0 {
 		hdr, ack := enet_packet_ack_default(item.packet_header.ChannelID)
@@ -298,7 +299,6 @@ func (host *enet_host) when_incoming_host_command(item *enet_host_incoming_comma
 		debugf("ack packet %v, typ:%v\n", ack.SN, item.packet_header.Type)
 		peer.outgoing_pend(ch, hdr, EnetPacketFragment{}, enet_packet_ack_encode(ack))
 	}
-	_when_enet_packet_incoming_disp[item.packet_header.Type](peer, item.packet_header, item.payload)
 	//	ch.do_send(peer)
 }
 
