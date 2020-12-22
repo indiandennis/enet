@@ -128,8 +128,11 @@ func (host *enet_host) run_socket() {
 		var pkhdr EnetPacketHeader
 		for i := uint8(0); err == nil && i < phdr.PacketCount; i++ {
 			err = binary.Read(reader, binary.BigEndian, &pkhdr)
-			payload := make([]byte, int(pkhdr.Size)-binary.Size(pkhdr))
-			_, err := reader.Read(payload)
+			bytesLeft := int(pkhdr.Size) - binary.Size(pkhdr)
+			payload := make([]byte, bytesLeft)
+			if bytesLeft > 0 {
+				_, err = reader.Read(payload)
+			}
 			//debugf("socket recv %v\n", pkhdr)
 			if err == nil {
 				host.when_socket_incoming_packet(phdr, pkhdr, payload, addr)
