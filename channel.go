@@ -29,6 +29,16 @@ type enet_channel struct {
 }
 
 func (ch *enet_channel) outgoing_pend(item *enet_channel_item) {
+	if ch._next_sn == 0 {
+		ch._next_sn = 1
+		ch.outgoing_begin = 1
+		ch.incoming_begin = 1
+		ch.outgoing_end = 1
+		ch.incoming_end = 1
+		ch.outgoing_used = 1
+		ch.incoming_used = 1
+		ch.outgoing_next = 1
+	}
 	item.header.SN = ch._next_sn
 	ch._next_sn++
 	debugf("channel outgoing %v, typ: %v\n", item.header.SN, item.header.Type)
