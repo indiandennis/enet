@@ -3,6 +3,7 @@ package enet
 import (
 	"bytes"
 	"encoding/binary"
+	"math/rand"
 	"net"
 	"os"
 	"os/signal"
@@ -39,13 +40,14 @@ func NewHost(addr string) (Host, error) {
 	ep, err := net.ResolveUDPAddr("udp", addr)
 
 	host := &enet_host{
-		fail:     0,
-		addr:     ep,
-		incoming: make(chan *enet_host_incoming_command, 16),
-		outgoing: make(chan *enet_host_outgoing_command, 16),
-		tick:     time.Tick(time.Millisecond * enet_default_tick_ms),
-		peers:    make(map[string]*enet_peer),
-		timers:   new_enet_timer_queue(),
+		fail:          0,
+		addr:          ep,
+		incoming:      make(chan *enet_host_incoming_command, 16),
+		outgoing:      make(chan *enet_host_outgoing_command, 16),
+		tick:          time.Tick(time.Millisecond * enet_default_tick_ms),
+		peers:         make(map[string]*enet_peer),
+		timers:        new_enet_timer_queue(),
+		next_clientid: rand.Uint32(),
 	}
 	if err == nil {
 		host.socket, err = net.ListenUDP("udp", ep)
