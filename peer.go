@@ -145,14 +145,23 @@ func (peer *enet_peer) when_enet_incoming_ack(header EnetPacketHeader, payload [
 		}
 	}
 }
-func notify_data(peer *enet_peer, dat []byte) {
+func notify_data(peer *enet_peer, chanid uint8, dat []byte) {
 	debugf("on-dat %v\n", len(dat))
+	if peer.host.notify_data != nil {
+		peer.host.notify_data(peer.host, "", chanid, dat)
+	}
 }
 func notify_peer_connected(peer *enet_peer, ret int) {
 	debugf("peer connected %v, ret: %v\n", peer.remote_addr, ret)
+	if peer.host.notify_connected != nil {
+		peer.host.notify_connected(peer.host, "", 0)
+	}
 }
 func notify_peer_disconnected(peer *enet_peer, ret int) {
 	debugf("peer disconnected %v, ret: %v\n", peer.remote_addr, ret)
+	if peer.host.notify_disconnected != nil {
+		peer.host.notify_disconnected(peer.host, "", 0)
+	}
 }
 func (peer *enet_peer) reset() {
 
@@ -231,7 +240,7 @@ func (peer *enet_peer) when_enet_incoming_reliable(header EnetPacketHeader, payl
 	ch.incoming_trans(&enet_channel_item{header, EnetPacketFragment{}, payload, 0, 0, nil})
 	ch.incoming_ack(header.SN)
 	for i := ch.incoming_slide(); i != nil; i = ch.incoming_slide() {
-		notify_data(peer, i.payload)
+		notify_data(peer, header.ChannelID, i.payload)
 	}
 }
 
@@ -250,7 +259,7 @@ func (peer *enet_peer) when_enet_incoming_fragment(header EnetPacketHeader, payl
 	ch.incoming_trans(&enet_channel_item{header, frag, dat, 0, 0, nil})
 	ch.incoming_ack(header.SN)
 	for i := ch.incoming_slide(); i != nil; i = ch.incoming_slide() {
-		notify_data(peer, i.payload)
+		notify_data(peer, header.ChannelID, i.payload)
 	}
 }
 
@@ -262,7 +271,7 @@ func (peer *enet_peer) when_enet_incoming_unrelialbe(header EnetPacketHeader, pa
 
 	dat := make([]byte, int(header.Size)-binary.Size(ur))
 	reader.Read(dat)
-	notify_data(peer, dat)
+	notify_data(peer, header.ChannelID, dat)
 }
 func (peer *enet_peer) when_unknown(header EnetPacketHeader, payload []byte) {
 	debugf("peer skipped packet : %v\n", header.Type)
