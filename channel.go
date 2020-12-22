@@ -183,6 +183,10 @@ func (ch *enet_channel) do_send(peer *enet_peer) {
 		return
 	}
 	for item := ch.outgoing_do_trans(); item != nil; item = ch.outgoing_do_trans() {
+		if item.header.Type == enet_packet_type_ack {
+			item.header.SN = 0
+		}
+
 		peer.do_send(item.header, item.fragment, item.payload)
 		item.retries++
 	}
