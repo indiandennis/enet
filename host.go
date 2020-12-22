@@ -208,6 +208,7 @@ func (host *enet_host) connect_peer(ep string) {
 	host.next_clientid++
 	peer := host.peer_from_endpoint(ep, cid)
 	if peer.clientid != cid { // connect a established peer?
+		host.notify_connected(host, ep, 0)
 		notify_peer_connected(peer, enet_peer_connect_result_duplicated)
 		return
 	}
