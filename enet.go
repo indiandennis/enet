@@ -15,8 +15,8 @@ type EnetCrc32Header struct {
 }
 type EnetPacketHeader struct {
 	Type      uint8  // enet_packet_type_xxx
-	Flags     uint8  // _needack, _forcefin_, enet_packet_header_flags_xxx
 	ChannelID uint8  // [0,n), or 0xff; oxff : control channel
+	Flags     uint8  // _needack, _forcefin_, enet_packet_header_flags_xxx
 	RSV       uint8  // not used
 	Size      uint32 // including packet_header and payload, bytes
 	SN        uint32 // used for any packet type which should be acked, not used for unreliable, ack
