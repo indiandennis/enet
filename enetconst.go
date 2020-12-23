@@ -26,7 +26,7 @@ const (
 )
 
 const (
-	enet_default_mtu               = 1400
+	enet_default_mtu               = 1200
 	enet_default_wndsize           = 0x8000 // bytes
 	enet_default_channel_count     = 2
 	enet_default_throttle_interval = 5000 // ms
