@@ -16,7 +16,7 @@ type Host interface {
 	SetDataHandler(DataEventHandler)
 	Connect(endpoint string)
 	Disconnect(endpoint string)
-	Write(endpoint string, chanid uint8, dat []byte)
+	Write(endpoint string, chanid uint8, dat []byte, customHeader *EnetPacketHeader)
 	Run(chan os.Signal)
 	Stop()
 }

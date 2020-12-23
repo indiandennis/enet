@@ -93,14 +93,14 @@ func (host *enet_host) Run(sigs chan os.Signal) {
 }
 
 func (host *enet_host) Connect(ep string) {
-	host.outgoing <- &enet_host_outgoing_command{ep, nil, enet_channel_id_all, true}
+	host.outgoing <- &enet_host_outgoing_command{ep, nil, enet_channel_id_all, true, nil}
 }
 func (host *enet_host) Disconnect(ep string) {
-	host.outgoing <- &enet_host_outgoing_command{ep, nil, enet_channel_id_none, true}
+	host.outgoing <- &enet_host_outgoing_command{ep, nil, enet_channel_id_none, true, nil}
 }
 
-func (host *enet_host) Write(endp string, chanid uint8, dat []byte) {
-	host.outgoing <- &enet_host_outgoing_command{endp, dat, chanid, true}
+func (host *enet_host) Write(endp string, chanid uint8, dat []byte, customHeader *EnetPacketHeader) {
+	host.outgoing <- &enet_host_outgoing_command{endp, dat, chanid, true, customHeader}
 }
 func (host *enet_host) Stop() {
 	host.when_socket_incoming_packet(EnetProtocolHeader{}, EnetPacketHeader{}, nil, nil)
@@ -238,7 +238,7 @@ func (host *enet_host) reset_peer(ep string) {
 	host.destroy_peer(peer)
 }
 func (host *enet_host) when_outgoing_host_command(item *enet_host_outgoing_command) {
-	if item.payload == nil {
+	if item.payload == nil && item.customHeader == nil {
 		if item.chanid == enet_channel_id_all { // connect request
 			host.connect_peer(item.peer)
 		}
@@ -270,7 +270,12 @@ func (host *enet_host) when_outgoing_host_command(item *enet_host_outgoing_comma
 		}
 
 	} else {
-		pkhdr := enet_packet_reliable_default(item.chanid, l)
+		var pkhdr EnetPacketHeader
+		if item.customHeader == nil {
+			pkhdr = enet_packet_reliable_default(item.chanid, l)
+		} else {
+			pkhdr = *item.customHeader
+		}
 		peer.outgoing_pend(ch, pkhdr, EnetPacketFragment{}, item.payload)
 	}
 	//	ch.do_send(peer)
@@ -376,10 +381,11 @@ type enet_host_incoming_command struct {
 	endpoint        *net.UDPAddr
 }
 type enet_host_outgoing_command struct {
-	peer     string
-	payload  []byte
-	chanid   uint8
-	reliable bool
+	peer         string
+	payload      []byte
+	chanid       uint8
+	reliable     bool
+	customHeader *EnetPacketHeader
 }
 
 func (host *enet_host) peer_from_endpoint(ep string, clientid uint32) *enet_peer {
