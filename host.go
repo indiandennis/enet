@@ -300,7 +300,7 @@ func (host *enet_host) when_incoming_host_command(item *enet_host_incoming_comma
 		debugf("cid mismatch %v\n", peer.remote_addr)
 		return
 	}
-	ch := peer.channel_from_id(item.packet_header.ChannelID)
+	// ch := peer.channel_from_id(item.packet_header.ChannelID)
 
 	_when_enet_packet_incoming_disp[item.packet_header.Type](peer, item.packet_header, item.payload)
 	// ack if needed
@@ -309,7 +309,8 @@ func (host *enet_host) when_incoming_host_command(item *enet_host_incoming_comma
 		ack.SN = item.packet_header.SN
 		ack.SntTime = item.protocol_header.SntTime
 		debugf("ack packet %v, typ:%v\n", ack.SN, item.packet_header.Type)
-		peer.outgoing_pend(ch, hdr, EnetPacketFragment{}, enet_packet_ack_encode(ack))
+		peer.do_send(hdr, EnetPacketFragment{}, enet_packet_ack_encode(ack))
+		// peer.outgoing_pend(ch, hdr, EnetPacketFragment{}, enet_packet_ack_encode(ack))
 	}
 	//	ch.do_send(peer)
 }
