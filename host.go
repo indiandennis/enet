@@ -26,6 +26,7 @@ type enet_host struct {
 	rcvd_bps       int
 	sent_bps       int
 	update_epoc    int64
+	startTime      int64
 	now            int64 // ms
 	last_recv_time int64
 	last_send_time int64
@@ -70,21 +71,22 @@ func NewHost(addr string) (Host, error) {
 func (host *enet_host) Run(sigs chan os.Signal) {
 	host.flags |= enet_host_flags_running
 	go host.run_socket()
+	host.startTime = unixtime_now()
 	debugf("running...\n")
 	for host.flags&enet_host_flags_stopped == 0 {
 		select {
 		case item := <-host.incoming:
-			host.now = unixtime_now()
+			host.now = unixtime_now() - host.startTime
 			host.when_incoming_host_command(item)
 		case item := <-host.outgoing:
-			host.now = unixtime_now()
+			host.now = unixtime_now() - host.startTime
 			host.when_outgoing_host_command(item)
 		case sig := <-sigs:
-			host.now = unixtime_now()
+			host.now = unixtime_now() - host.startTime
 			signal.Stop(sigs)
 			host.when_signal(sig)
 		case t := <-host.tick:
-			host.now = unixtime_now()
+			host.now = unixtime_now() - host.startTime
 			host.when_tick(t)
 		}
 	}
@@ -397,7 +399,7 @@ func (host *enet_host) peer_from_addr(ep *net.UDPAddr, clientid uint32) *enet_pe
 	id := ep.String()
 	peer, ok := host.peers[id]
 	if !ok {
-		peer = new_enet_peer(ep, host)
+		peer = new_enet_peer(ep, host, id)
 		peer.clientid = clientid
 		host.peers[id] = peer
 	}
