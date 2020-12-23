@@ -8,6 +8,7 @@ import (
 
 type enet_peer struct {
 	peerid            uint16
+	endpoint          string
 	clientid          uint32 // local peer id
 	mtu               uint32 // remote mtu
 	snd_bandwidth     uint32
@@ -45,12 +46,13 @@ type enet_peer struct {
 	host              *enet_host
 }
 
-func new_enet_peer(addr *net.UDPAddr, host *enet_host) *enet_peer {
+func new_enet_peer(addr *net.UDPAddr, host *enet_host, endpoint string) *enet_peer {
 	debugf("new peer %v\n", addr)
 	cid := host.next_clientid
 	host.next_clientid++
 	return &enet_peer{
 		peerid:            0xffff,
+		endpoint:          endpoint,
 		clientid:          cid,
 		flags:             0,
 		mtu:               enet_default_mtu,
@@ -148,19 +150,19 @@ func (peer *enet_peer) when_enet_incoming_ack(header EnetPacketHeader, payload [
 func notify_data(peer *enet_peer, chanid uint8, dat []byte) {
 	debugf("on-dat %v\n", len(dat))
 	if peer.host.notify_data != nil {
-		peer.host.notify_data(peer.host, "", chanid, dat)
+		peer.host.notify_data(peer.host, peer.endpoint, chanid, dat)
 	}
 }
 func notify_peer_connected(peer *enet_peer, ret int) {
 	debugf("peer connected %v, ret: %v\n", peer.remote_addr, ret)
 	if peer.host.notify_connected != nil {
-		peer.host.notify_connected(peer.host, "", 0)
+		peer.host.notify_connected(peer.host, peer.endpoint, 0)
 	}
 }
 func notify_peer_disconnected(peer *enet_peer, ret int) {
 	debugf("peer disconnected %v, ret: %v\n", peer.remote_addr, ret)
 	if peer.host.notify_disconnected != nil {
-		peer.host.notify_disconnected(peer.host, "", 0)
+		peer.host.notify_disconnected(peer.host, peer.endpoint, 0)
 	}
 }
 func (peer *enet_peer) reset() {
