@@ -119,6 +119,10 @@ func (peer *enet_peer) when_enet_incoming_ack(header EnetPacketHeader, payload [
 	peer.update_throttle(rtt)
 	debugf("peer in-ack %v\n", peer.remote_addr)
 
+	if peer.host.notify_ack != nil {
+		peer.host.notify_ack(peer.host, peer.endpoint, header.ChannelID, payload)
+	}
+
 	ch := peer.channel_from_id(header.ChannelID)
 	ch.outgoing_ack(ack.SN)
 	for i := ch.outgoing_slide(); i != nil; i = ch.outgoing_slide() {

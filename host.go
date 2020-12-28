@@ -34,6 +34,7 @@ type enet_host struct {
 	notify_connected    PeerEventHandler
 	notify_disconnected PeerEventHandler
 	notify_data         DataEventHandler
+	notify_ack          AckEventHandler
 }
 
 func NewHost(addr string) (Host, error) {
@@ -348,6 +349,9 @@ func (host *enet_host) SetDisconnectionHandler(h PeerEventHandler) {
 
 func (host *enet_host) SetDataHandler(h DataEventHandler) {
 	host.notify_data = h
+}
+func (host *enet_host) SetAckHandler(h AckEventHandler) {
+	host.notify_ack = h
 }
 func (host *enet_host) update_rcv_statis(rcvd int) {
 	host.rcvd_bytes += rcvd
