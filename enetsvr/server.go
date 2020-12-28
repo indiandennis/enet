@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/heartszhang/enet"
+	"github.com/bennesp/enet"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func install_signal() chan os.Signal {
 }
 
 func pong(host enet.Host, ep string, chanid uint8, payload []byte) {
-	host.Write(ep, chanid, payload)
+	host.Write(ep, chanid, payload, nil)
 
 	fmt.Printf("dat pong %v\n", ep)
 }

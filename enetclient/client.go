@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/heartszhang/enet"
+	"github.com/bennesp/enet"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 
 func ping_on_connect(host enet.Host, ep string, reason int) {
 	if reason == 0 {
-		host.Write(ep, 0, []byte("hello enet"))
+		host.Write(ep, 0, []byte("hello enet"), nil)
 	}
 }
 func ping_on_reliable(host enet.Host, ep string, chid uint8, data []byte) {
