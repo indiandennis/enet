@@ -1,3 +1,3 @@
-module github.com/bennesp/enet
+module github.com/indiandennis/enet
 
 go 1.15
